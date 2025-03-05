@@ -38,7 +38,7 @@ El agente es capaz de procesar texto, audio, imágenes y documentos, proporciona
 
 Además, el proyecto incluye un WorkFlow para la creación automatizada de Agentes a partir de credenciales. Este proceso (aún en desarrollo) busca facilitar la automatización de agentes utilizando las credenciales del usuario. En el flujo de uso, el usuario adquiere el producto en una página web o aplicación, acepta el acceso a los servicios de Google utilizados e ingresa su información, lo que permite la creación de todos los WFs necesarios mediante OAuth2.
 
-Se eligio N8N como herramienta principal por su rapido desarrollo y facilidad de crear sistemas, pudiendo validar la idea en menos tiempo. Teniendo la posibilidad de escar utilizando frameworks mas especializados, robustos y escalables como LangChain por ejemplo.
+Se eligió N8N como herramienta principal por su rápido desarrollo y facilidad de crear sistemas, pudiendo validar la idea en menos tiempo. Teniendo la posibilidad de escalar utilizando frameworks más especializados, robustos y escalables como LangChain por ejemplo.
 
 ## 🚀 Tecnologías Utilizadas
 
@@ -50,4 +50,5 @@ Se eligio N8N como herramienta principal por su rapido desarrollo y facilidad de
 - *LLMs*
 - *APIs / WebHooks*
 - *JavaScript*
+
 
