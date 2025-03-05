@@ -1,0 +1,286 @@
+{
+  "name": "REASERCH_RAG_V1",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.1,
+      "position": [
+        -20,
+        440
+      ],
+      "id": "844b1db3-b5d8-455b-a648-583511144311",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "RAG_Agent",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $('Workflow Input Trigger').item.json.userWfs.FileMangementRAG }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={query:{{ `\"${$fromAI('query', `Tarea a delegar`, 'string')}\" ` }} }",
+            "userId": "={{ $('Workflow Input Trigger').item.json.userId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object"
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        340,
+        440
+      ],
+      "id": "5aa0e226-db15-4b76-8280-5ddbbceae98e",
+      "name": "RAG_Agent"
+    },
+    {
+      "parameters": {
+        "name": "RESEARCH_Agent",
+        "workflowId": {
+          "__rl": true,
+          "value": "jxzwFh4KGii8ecxv",
+          "mode": "list",
+          "cachedResultName": "ResearchAgent_V1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{$fromAI('queryOptimizada', 'Petición del usuario optimizada')}}",
+            "userId": "={{ $('Workflow Input Trigger').item.json.userId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        520,
+        440
+      ],
+      "id": "1ba36217-5a49-47da-b0c6-3e5e36b010bb",
+      "name": "RESEARCH_Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# ROL\nEres un agente de investigación diseñado para delegar tareas relacionadas con la búsqueda y obtención de información tanto en internet como en los documentos de la base de conocimientos del usuario. \n\n# OBJETIVO\nTu objetivo es, a partir de la petición, proporcionar información precisa, relevante y organizada al, optimizando el uso de tus subagentes.\n\n# INSTRUCCIONES\n1. Recibe la petición del usuario y analiza su contenido para identificar los requerimientos específicos.\n2. Odenes de busqueda\n   - Prioriza la búsqueda en el RAG_Agent (base de conocimientos del usuario), a menos que se especifique lo contrario.\n   - Si no encuentras información relevante o suficiente, consulta al usuario si desea realizar una búsqueda adicional en internet utilizando el RESEARCH_Agent.\n3. Si la petición es ambigua:\n   - Realiza búsquedas tanto en el RAG_Agent como en el RESEARCH_Agent.\n   - Combina los resultados relevantes y preséntalos al usuario.\n4. Evalúa los resultados obtenidos:\n   - Verifica si son relevantes y están relacionados con la solicitud del usuario.\n   - Si los resultados no cumplen con las expectativas, informa al usuario y solicita aclaraciones adicionales para refinar la búsqueda.\n5. Presenta la información al usuario de forma clara y estructurada, indicando la fuente (internet o base de conocimientos).\n\n# HERRAMIENTAS y SUBAGENTES\n1. *RESEARCH_Agent: Especializado en buscar e investigar información en internet.\n2. *RAG_Agent: Accede a la base de conocimientos del usuario (documentos y datos organizados temáticamente).\n\n# SALIDA\n- Responde al usuario con un resumen claro y bien estructurado de la información obtenida.\n- Indica explícitamente la fuente de cada dato (internet o base de conocimientos).\n- Si no se encuentra información relevante, informa al usuario e indica las acciones realizadas.\n- Si la información proviene del \"RAG_Agent\" incluye la metadata de la respuesta para mas precisión.\n\n\n# NOTAS ADICIONALES\n- Si ninguna fuente proporciona resultados relevantes, informa al usuario e intenta obtener más detalles para refinar la búsqueda.\n- Combina resultados relevantes cuando sea necesario para ofrecer una respuesta más completa.\n- Recuerda mencionar la fuente de la información obtenida(Internet o Documentos) e incluir metadata o detalles su los tienes."
+        }
+      },
+      "id": "dada9acc-4c4b-421b-9fcd-34c239464ec8",
+      "name": "REASERCH_RAG",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        100,
+        240
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Workflow Input Trigger').first().json.userId }}",
+        "tableName": "=chat_histories_{{ $('Workflow Input Trigger').first().json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        140,
+        440
+      ],
+      "id": "d0d883ff-741d-4660-af15-e77828bd913e",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "h7gJQU9CguNVM4KL",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            },
+            {
+              "name": "userId"
+            },
+            {
+              "name": "userWfs",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -360,
+        240
+      ],
+      "id": "84e5ed46-f0a7-45db-8344-4d209c5c38cd",
+      "name": "Workflow Input Trigger"
+    }
+  ],
+  "pinData": {
+    "Workflow Input Trigger": [
+      {
+        "json": {
+          "query": "incendio en las plantas de la yerba Playadito 2025",
+          "userId": "5492944250222",
+          "userWfs": {
+            "GmailAgent": "mUk8M4qDFkIuKH2E",
+            "GoogleCalendarAgent": "8YNlFsqqSbrr2Wg1",
+            "ProjectsAgent": "6HaezZPbFfrm6Z6j",
+            "MainAgent": "jgxSh2Lk6AJ0xX0f",
+            "FileMangementRAG": "L3kLep02iOVJrcWQ"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "REASERCH_RAG",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG_Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "REASERCH_RAG",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESEARCH_Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "REASERCH_RAG",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REASERCH_RAG": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "REASERCH_RAG",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "REASERCH_RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "50bdb3fe-f02a-47cd-b484-95f09ab7c68e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "jKICM6QWA2qEOhD7",
+  "tags": [
+    {
+      "createdAt": "2025-01-27T21:18:44.929Z",
+      "updatedAt": "2025-01-27T21:18:44.929Z",
+      "id": "1z9zi0iiQsjeuHX3",
+      "name": "JERE"
+    }
+  ]
+}

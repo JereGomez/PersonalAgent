@@ -1,0 +1,375 @@
+{
+  "name": "Tasks&NotesAGENT_V1",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            },
+            {
+              "name": "userId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1800,
+        1980
+      ],
+      "id": "42bf8f08-d1cc-4954-ba93-c8fd7dae3f3d",
+      "name": "Workflow Input Trigger"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1520,
+        2160
+      ],
+      "id": "d8b3f31f-145c-4a08-a329-ea30cce5323c",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52e4e6d9-68c9-4120-aad1-ad96835963ea",
+              "name": "text",
+              "value": "={{ $json.chatInput || $json.query }}",
+              "type": "string"
+            },
+            {
+              "id": "9f84fd3e-d41f-4348-b3cc-3992e2f0e92e",
+              "name": "userId",
+              "value": "={{$json.userId || 5492944250222}}",
+              "type": "string"
+            },
+            {
+              "id": "85d9daef-91bd-40a9-a074-78c098ae0d78",
+              "name": "tablaNotas",
+              "value": "=notas_{{$json.userId}}",
+              "type": "string"
+            },
+            {
+              "id": "db04bf70-9868-443c-9002-f889d8872697",
+              "name": "tablaTareas",
+              "value": "=tareas_{{ $json.userId }}",
+              "type": "string"
+            },
+            {
+              "id": "ec25e881-e539-4d1a-802c-534003faf224",
+              "name": "chatHistory",
+              "value": "=chat_histories_{{ $json.userId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "545ec93c-34ca-4339-a81e-c9eb3d3b6468",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1500,
+        1820
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1800,
+        1680
+      ],
+      "id": "d4649d0b-e8b9-4c48-b52c-999df5575f70",
+      "name": "When chat message received",
+      "webhookId": "7c02cd9d-3cf9-4754-8b97-fdc924d85348",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "={{ $fromAI('nombreTabla', 'Nombre de la tabla a obtener datos') }}"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -1240,
+        2160
+      ],
+      "id": "8460656c-d625-4653-8f33-c5c2059dd92d",
+      "name": "GET_ROWS",
+      "credentials": {
+        "supabaseApi": {
+          "id": "DeB4XVDka63BlBUZ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "={{ $fromAI('nombreTabla', 'nombre de la tabla a nusar') }}",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "=nombrelista",
+              "condition": "ilike",
+              "keyValue": "=*{{ $fromAI('nombreLista', 'nombre lista tareas o notas a actualizar')}}*"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "={{ $fromAI('nombreColumna', 'Nombre columna a actualizar') }}",
+              "fieldValue": "={{$fromAI('informacionActualizada', 'informacion actualizada')}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -1100,
+        2160
+      ],
+      "id": "508df1e4-8acd-4a25-a822-3e820b4d56c3",
+      "name": "UPDATE",
+      "credentials": {
+        "supabaseApi": {
+          "id": "DeB4XVDka63BlBUZ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "={{ $fromAI('nombreTabla', 'nombre de la tabla a nusar') }}",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "=nombrelista",
+              "condition": "ilike",
+              "keyValue": "=*{{ $fromAI('nombreLista', 'nombre lista tareas o notas a actualizar')}}*"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        2160
+      ],
+      "id": "dedb957c-84b6-4831-a82f-69c1a227f79f",
+      "name": "DELETE",
+      "credentials": {
+        "supabaseApi": {
+          "id": "DeB4XVDka63BlBUZ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "={{ $fromAI('nombreTabla', 'nombre de la tabla a nusar') }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "={{ $fromAI('nombreColumna', 'listatareas o listanotas dependiendo de la tabla a usar') }}",
+              "fieldValue": "={{ $fromAI('lista', 'jsonb de lista tareas o notas') }}"
+            },
+            {
+              "fieldId": "nombrelista",
+              "fieldValue": "={{ $fromAI('nombreLista', 'nombre de la lista a crear') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        2160
+      ],
+      "id": "899f3afe-6033-4e80-9117-b37fe64a300e",
+      "name": "CREATE",
+      "credentials": {
+        "supabaseApi": {
+          "id": "DeB4XVDka63BlBUZ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=# ROL\nSos un gestor de notas y listas de tareas altamente efectivo, especializado en tomar y almacenar notas del usuario, y también gestionar las listas de tareas (to-do lists)\n\n# OBJETIVO\nTu objetivo es, a partir de la petición del usuario, administrar las Notas rápidas y listas de tareas de un usuario(crear, leer, eliminar, actualizar). Garantizando la productividad del usuario y siempre siendo proactivo en su ayuda\n\n# INSTRUCCIONES\nA partir del requerimiento del usuario podrás leer, crear, actualizar y eliminar, tanto  listas de notas y tareas como su contenido. \n\nLa información está almacenada en una base de datos, una tabla para notas y otra tabla para tareas. Las notas y tareas están en las columnas 'listanotas' y 'listatareas' respectivamente. Estas columnas son de tipo de dato JSONB y están almacenadas en una base de datos postgres.\n\n## Estructura y nombre de las tablas:\nNotas: id|created_at|listanotas|nombrelistanotas\nNombreTabla: '{{ $json.tablaNotas }}'\nFormato de objeto jsonb en columna 'listanotas':\n{\n  \"notasEnLista\": [\n    {\n      \"cuerpoNota\": \"\",\n      \"nombreNota\": \"\",\n      \"fechaCreacion\": \"\"\n    }\n  ],\n  \"nombreListaNotas\": \"\"\n}\n\n\nTareas: id|created_at|listanotas|nombrelistatareas\nNombreTabla: '{{ $json.tablaTareas }}'\nFormato de objeto jsonb en columna 'listatareas':\n{\n  \"tareas\": [\n    {\n      \"estadoTarea\": \"\",\n      \"nombreTarea\": \"\",\n      \"fechaCreacion\": \"\",\n      \"prioridad\": \"\"\n    }\n  ],\n  \"nombreListaTareas\": \"TareasRpidas\"\n}\n\n# HERRAMIENTAS\n\n-GET_ROWS podrás obtener todas las filas de una tabla.\n\n-UPDATE podrás actualizar una fila de notas o tareas. Para para actualizar debes obtener la fila a actualizar, modificar la columna de formato jsonb y luego actualizarla, utilizando la columna 'nombrelistatareas'o 'nombrelistanotas' para filtrar la fila a actualizar. \nAntes de finalizar y responder, vuelve a obtener la fila actualizada y confirma que la información coincide con el requerimiento del usuario.\n\n-DELETE podrás eliminar listas completas, ten mucho cuidado con esta acción únicamente elimínala si el usuario confirma la acción. Si el usuario pide eliminar todas las tareas de una lista, usa la herramienta UPDATE y deja la lista vacía, luego pregunta si quiere eliminar la lista por completo. \n\n-CREATE podrás crear nuevas listas de tareas o notas. Recuerda en el filtro 'nombreColumna' ira listatareas si se está trabajando con la tabla tareas o listanotas si se está trabajando con la tabla notas. En la columna 'nombrelista' no puede haber duplicados, por lo que nunca crees una lista con un nombre existente. Siempre mantén el formato adecuado del objeto con todas las propiedades que hay en el ejemplo. FechaCreacion es: {{ $now }} y prioridad si no se especifica es \"\".\n\n\n# SALIDA\n-Siempre responde al usuario en un formato legible y entendible para las notas y tareas. Si consideras que usar emojis es necesario hazlo. \n-La fecha o timestamp envíalo en formato legible para el usuario, por lo que debes convertirlo\n\n# INFORMACIÓN IMPORTANTE\nVerifica la respuesta y las tareas realizadas antes de dar por terminada la tarea, no modifiques, crees, elimines información si no estás seguro de la tarea.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1320,
+        1820
+      ],
+      "id": "7ed40c2d-7a61-4d90-b79c-750b547a3e80",
+      "name": "Tasks&NotesAGENT"
+    }
+  ],
+  "pinData": {
+    "Workflow Input Trigger": [
+      {
+        "json": {
+          "query": "prompt template",
+          "userId": "5492944250222"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tasks&NotesAGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Tasks&NotesAGENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET_ROWS": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tasks&NotesAGENT",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tasks&NotesAGENT",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tasks&NotesAGENT",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATE": {
+      "ai_tool": [
+        [
+          {
+            "node": "Tasks&NotesAGENT",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "8e6ca08e-0805-4c5d-99f8-ee7ace084d05",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "ZoWJDjsykSOLgEw6",
+  "tags": [
+    {
+      "createdAt": "2025-02-03T19:06:14.434Z",
+      "updatedAt": "2025-02-03T19:06:14.434Z",
+      "id": "GGf2XmduEVYSBLmj",
+      "name": "REUSABLE"
+    },
+    {
+      "createdAt": "2025-02-03T19:04:55.159Z",
+      "updatedAt": "2025-02-03T19:04:55.159Z",
+      "id": "YMiL5KWLExQJuOBi",
+      "name": "LIVE"
+    }
+  ]
+}

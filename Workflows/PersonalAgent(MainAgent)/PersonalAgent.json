@@ -1,0 +1,1647 @@
+{
+  "name": "PA_V.DEV_TEST",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a9ea0136-200d-4fae-84b2-973ee9f60558",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta para obtener Nombre, Apellido,  Email, Teléfono, Dirección ",
+        "documentId": {
+          "__rl": true,
+          "value": "1t6oTUYSHHmSGSoJymISupuZp5M7_XeuZnczLPXzM5F0",
+          "mode": "list",
+          "cachedResultName": "Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t6oTUYSHHmSGSoJymISupuZp5M7_XeuZnczLPXzM5F0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t6oTUYSHHmSGSoJymISupuZp5M7_XeuZnczLPXzM5F0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "ebd453e3-8ee7-47f4-b775-23cb0188f72f",
+      "name": "DatosDeContactos",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        -940,
+        700
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+         
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Set important variables').item.json.userID }}",
+        "tableName": "=chat_histories_{{ $('Set important variables').item.json.userID }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1080,
+        680
+      ],
+      "id": "8cc325ce-da0d-4e45-a698-745df127f819",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "h7gJQU9CguNVM4KL",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -3980,
+        320
+      ],
+      "id": "40696ac0-3c32-4314-9ae0-a2611218501c",
+      "name": "When chat message received",
+      "webhookId": "a4e41d42-cc44-488f-b04f-9d5040ccd03e"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "629ddf04-9d0b-4cf7-b246-7ab549fcbd0c",
+              "leftValue": "={{ $('Set important variables').item.json.baseUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        420
+      ],
+      "id": "dd1128a7-1bac-48be-adf5-85610ee48134",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "337c5830-c076-470f-86a3-c8646f9e35d2",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        660
+      ],
+      "id": "643b7934-95b0-4fdd-afd7-d7e4822f294d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "INPUT/ENTRADA\n",
+        "height": 480,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4060,
+        240
+      ],
+      "id": "93403cfe-c3b6-40aa-9a40-a82e542ec08b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.combinedText2 }}",
+        "options": {
+          "systemMessage": "=#Rol  \nSos el Asistente Personal de {{ $('Set important variables').item.json.user }}, experto en interpretación de instrucciones, delegación de tareas y resolución de problemas.\n\n#Objetivo  \nOptimizar la vida tanto personal como laboral, así como la productividad y bienestar del usuario, mediante un árbol de agentes especializados que ejecutan acciones con el máximo contexto, relevancia y eficiencia. Actuando como mano derecha del usuario, te encargarás de interpretar sus solicitudes, coordinar la tarea con el agente correspondiente y delegar de forma única cada acción. La confianza del usuario es tu motor; por ello, adoptá siempre una actitud proactiva y resolutiva.\n\n#Herramientas/Subagentes  \n- *📧 AgenteComunicacional*: Gestión de correos electrónicos (enviar, obtener, responder).  \n- *🗓️ AgenteCalendario_Agenda*: Gestión integral del Google Calendar y la agenda (eventos, reuniones, actividades).  \n- *🔍 Investigador_RAG*: Investigación avanzada en internet y síntesis de documentos.  \n- *📝 Asistente de Notas, Tareas y Recordatorios*: Gestión ágil de notas rápidas, listas de tareas (to-do list, hábitos) y recordatorios/temporizadores.  \n- *Día y Horas Actuales*: {{ new Date().toLocaleString('es-ar', { weekday: 'long' }) }} {{ $now.format('DD HH:mm') }}  \n- *Contactos*: Acceso a la plantilla de GoogleSheets con la lista de contactos.  \n- *Calculadora*: Herramienta para realizar cálculos precisos.\n\n#🎯 Funciones Principales  \n- *📧 Gestión de Emails*: Redactar, enviar y gestionar correos electrónicos de forma efectiva.  \n- *🗓️ Organización de Calendario*: Crear y gestionar eventos, revisar disponibilidad y coordinar reuniones.  \n- *📝 Gestión de Notas, Tareas y Recordatorios*: Capturar notas rápidas, organizar listas de tareas con seguimiento de prioridades y configurar recordatorios/temporizadores de manera ágil.  \n- *🔍 Investigación & Análisis*: Realizar búsquedas avanzadas, síntesis de documentos y generar reportes ejecutivos que faciliten la toma de decisiones.  \n- *⏱️ Optimización del Tiempo*: Manejo de rocordatorios\n\n## Instrucciones  \n* Recibir la solicitud del usuario y detectar el área o áreas involucradas.  \n* Delegar la tarea en el agente especializado correspondiente utilizando un mensaje claro que contenga todo el contexto necesario.  \n* Validar que la acción delegada se ejecute correctamente y entregar la respuesta final al usuario de forma clara y atractiva (utilizando emojis cuando aporte claridad).  \n* En caso de cualquier error, reintentar la acción inmediatamente y notificar al usuario de forma comprensible.\n\n## Ejemplos  \nEjemplo 1:  \nInput: \"Obtén mi agenda y tareas del día de hoy.\"  \nContexto:  \n- Agenda: Usar el AgenteCalendario_Agenda para obtener reuniones y eventos programados.  \n- Tareas: Usar el Asistente Personal de Notas, Tareas y Recordatorios para extraer notas y tareas pendientes con posibles fechas de vencimiento.  \nOutput:  \n* Agenda del día: Listado de reuniones y eventos con horarios y detalles.  \n* Lista de tareas: Tareas organizadas por prioridad o categoría.\n\nEjemplo 2:  \nInput: \"Envíale un mail a ‘x’ preguntando sobre los avances de la reunión de mañana.\"  \nContexto:  \n* Comunicación: Delegar en el AgenteComunicacional el envío del mail con asunto y cuerpo resumiendo la consulta.  \nOutput:  \n* Confirmación del envío del mail a ‘x’.\n\nEjemplo 3:  \nInput: \"Busca noticias sobre inteligencia artificial y un resumen de los documentos relevantes en mi base de conocimientos.\"  \nContexto:  \n* Investigación: Delegar en Investigador_RAG la búsqueda y síntesis de la información solicitada.  \nOutput:  \n* Resumen de las noticias y documentos relevantes encontrados.\n\n#Notas  \n- Aprovechá todas las herramientas disponibles y consultá la memoria de manera complementaria.  \n- Al delegar, asegurate de incluir la totalidad del contexto en un solo mensaje dirigido al agente especializado.  \n- No delegues tareas que no sean solicitadas por el usuario.  \n- Adaptate a las preferencias y estilo de trabajo del usuario para mejorar la asistencia a futuro.  \n- La eficiencia y proactividad en cada acción son vitales para el éxito. Cada ayuda proporcionada contribuye a recompensas futuras."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -980,
+        420
+      ],
+      "id": "5791f997-34ab-4e75-b94f-02da7100ef58",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.1,
+      "position": [
+        -1220,
+        900
+      ],
+      "id": "7ff618f7-d439-4416-9fff-6a78808be1d1",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "MANAGER DE AGENTES y HERRAMIENTAS\nPrimer delegador de tareas. Determina requerimiento maco y selecciona agente a delegar tarea\n",
+        "height": 760,
+        "width": 1020
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1260,
+        220
+      ],
+      "id": "d69d3c95-e987-4944-bfef-038919689e05",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "{{path_userID}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -3980,
+        560
+      ],
+      "id": "70a47896-b168-4029-b840-af50e7cd89ef",
+      "name": "Webhook",
+      "webhookId": "83083101-5ebf-4e38-bc81-a32b5eff60bb"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response =  [\n  {\n    json: {\n      baseUrl: $input.first().json.body?.webhook.body.server_url|| \"\",\n      instance: $input.first().json.body?.webhook.body.instance || \"\",\n      remoteJid:$input.first().json.body?.webhook.body.data.key.remoteJid||\"\",\n      message: $input.first().json.body?.webhook.body.data.message.conversation || $json.chatInput || \"\",\n      userID: ($input.first().json.body?.webhook.body.data.key.remoteJid.split(\"@\")[0] || \"test\"),\n      wfsData: ( $input.first().json.body?.wfsData|| \"\"),\n      dataId: ( $input.first().json.body?.webhook.body.data.key.id|| \"testing\"),\n      messageType: ($input.first().json.body?.webhook.body.data.messageType || \"conversation\"),\n      evoApiKey: ($input.first().json.body?.webhook.body.apikey || \"\"),\n      user: ( $input.first().json.body?.webhook.body.data.pushName || \"testUser\")\n    },\n  },\n];\nif($input.first().json.body?.body?.data?.message?.base64){\nconst base64Data = $input.first().json.body?.body?.data?.message?.base64 || null;\n// Crear un archivo en formato compatible (ej. MP3, OGG, WAV)\nresponse[0].json.mediaUrl = base64Data\n}\n\nif(response[0].json.message.includes(\"https://www.youtube.com\"))\n   response[0].json.messageType = \"youtubeVideo\";\n\n\nif(response[0].json.userID == \"Test\") response[0].json.userID = \"test_PersonalAgent\"\n\n\nreturn response;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3800,
+        440
+      ],
+      "id": "6e4d3e7d-fc38-4ce4-ba7b-6a4e8ac85ec5",
+      "name": "Set important variables"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64",
+        "binaryPropertyName": "=data",
+        "options": {
+          "fileName": "={{ $json.fileName }}",
+          "mimeType": "={{ $json.mimetype }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -2620,
+        240
+      ],
+      "id": "2e2eff98-f99b-4571-abd9-ba1e27b96d6e",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2480,
+        240
+      ],
+      "id": "e73dc992-c616-4ce8-9744-0d85fe56c35b",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "AgenteComunicacional",
+        "description": "Usar esta herramienta para tareas comunicacionales, enviar mails, mensajes, etc.",
+        "workflowId": {
+          "__rl": true,
+          "value": "33FPgw1UdWEqAw15",
+          "mode": "list",
+          "cachedResultName": "SOCIAL_COMUNICATION_V1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `Tarea a delegar`, 'string') }}",
+            "userId": "={{ $('Set important variables').first().json.userID }}",
+            "userWfs": "={{ $('Set important variables').item.json.wfsData }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "userWfs",
+              "displayName": "userWfs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -740,
+        820
+      ],
+      "id": "e60effc6-72e2-4b95-be80-c635fa598de4",
+      "name": "AgenteComunicacional"
+    },
+    {
+      "parameters": {
+        "name": "AgenteInvestigador_RAG",
+        "description": "Llama a este agente para buscar información, para investigar sobre temáticas y obtener información de los documentos del usuario.",
+        "workflowId": {
+          "__rl": true,
+          "value": "jKICM6QWA2qEOhD7",
+          "mode": "list",
+          "cachedResultName": "REASERCH_RAG_V1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `Tarea a delegar optimizada y detallada a delegar`, 'string') }}",
+            "userId": "={{ $('Set important variables').first().json.userID }}",
+            "userWfs": "={{ $('Set important variables').item.json.wfsData }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "userWfs",
+              "displayName": "userWfs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        820
+      ],
+      "id": "653903b7-488d-4290-bd32-5ce9c3c1f3c6",
+      "name": "Investigador_RAG"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cc3b0a72-f27d-446e-8613-08494fefb51a",
+              "leftValue": "={{ $('Set important variables').item.json.userID }}",
+              "rightValue": "test_PersonalAgent",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        480
+      ],
+      "id": "9984832e-bce7-41cd-9881-0eb36330b559",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://n8n-n8n.ig492j.easypanel.host/webhook/6e0f0f97-10c7-4acf-84c9-7d041676a877",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('AI Agent').item.json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        460
+      ],
+      "id": "917d96bd-ac4a-49c6-8b71-f8bba21d4bef",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "name": "AgenteCalendario_Agenda",
+        "description": "Llama a este agente para delegar las tareas relacionadas con Google calendar, eventos y agenda.",
+        "workflowId": {
+          "__rl": true,
+          "value": "TcC99aSpQQM5kHrs",
+          "mode": "list",
+          "cachedResultName": "CALENDAR_EVENTS_V1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `Tarea a delegar`, 'string') }}",
+            "userId": "={{ $('Set important variables').first().json.userID }}",
+            "userWfs": "={{ $('Set important variables').item.json.wfsData }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "userWfs",
+              "displayName": "userWfs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        700
+      ],
+      "id": "ed981acb-d09a-4489-a3e9-dd56daece16e",
+      "name": "AgenteCalendario_Agenda"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d10cd84d-3e8a-483d-b8fc-85fe377b6f44",
+                    "leftValue": "={{ $json.messageType }}",
+                    "rightValue": "=audioMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messageType }}",
+                    "rightValue": "conversation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a8f2d2a4-e2a3-4627-9a43-5008fc6579b9",
+                    "leftValue": "={{ $json.messageType }}",
+                    "rightValue": "imageMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c26a6fb0-7300-4e01-936b-7764df811152",
+                    "leftValue": "={{ $json.messageType }}",
+                    "rightValue": "documentMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Document"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c6ff0421-1ea7-49a5-802e-9822f50e3a4b",
+                    "leftValue": "={{ $json.messageType }}",
+                    "rightValue": "youtubeVideo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "youtubeVideo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -3580,
+        420
+      ],
+      "id": "ccbe5f0a-b4f3-40b6-aa88-37c3e1b6bbfe",
+      "name": "Message Type"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Set important variables').first().json.remoteJid }}",
+        "messageData": "={{ $json.message }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2300,
+        420
+      ],
+      "id": "c2f4511b-a3f1-4eca-8b7b-75275a38da5b",
+      "name": "Text Memory",
+      "credentials": {
+        "redis": {
+          "id": "m4AZvxGweEJDQ85o",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Set important variables').first().json.remoteJid }}",
+        "messageData": "={{ $json.text }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2300,
+        240
+      ],
+      "id": "6d2abdde-5a7c-4656-85ef-55e4d4e92755",
+      "name": "Audio Memory",
+      "credentials": {
+        "redis": {
+          "id": "m4AZvxGweEJDQ85o",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Set important variables').first().json.remoteJid }}",
+        "messageData": "=Descripción Imagen:{{$json.content }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2300,
+        580
+      ],
+      "id": "9f65b27d-5411-4f52-ad2f-1dfaa2ea0eb2",
+      "name": "Image Memory",
+      "credentials": {
+        "redis": {
+          "id": "m4AZvxGweEJDQ85o",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "Tu único trabajo es responder con la información que puedas extraer de ella.",
+        "inputType": "base64",
+        "options": {
+          "detail": "auto"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        -2460,
+        580
+      ],
+      "id": "323f3d51-2a85-4834-91db-bb31c4120fb5",
+      "name": "Analyse Image",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64",
+        "binaryPropertyName": "=data",
+        "options": {
+          "fileName": "={{ $json.fileName }}",
+          "mimeType": "={{ $json.mimetype }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -2620,
+        580
+      ],
+      "id": "06323f2d-984e-4803-a9c5-23c70a0ca5bc",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set important variables').item.json.baseUrl }}/chat/getBase64FromMediaMessage/{{ $('Set important variables').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Set important variables').first().json.evoApiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"message\": {\n        \"key\": {\n            \"id\": \"{{ $('Set important variables').first().json.dataId }}\"\n        }\n    },\n    \"convertToMp4\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2760,
+        240
+      ],
+      "id": "7de70602-deba-4eff-b70b-5e3e4bd588d4",
+      "name": "GetAudio"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set important variables').item.json.baseUrl }}/chat/getBase64FromMediaMessage/{{ $('Set important variables').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Set important variables').first().json.evoApiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"message\": {\n        \"key\": {\n            \"id\": \"{{ $('Set important variables').first().json.dataId }}\"\n        }\n    },\n    \"convertToMp4\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2760,
+        580
+      ],
+      "id": "4267fea1-8262-4214-aabf-29f6bc812a27",
+      "name": "GetImage"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Message1",
+        "key": "={{ $('Set important variables').first().json.remoteJid }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2120,
+        420
+      ],
+      "id": "fa45e62c-4399-48c1-847e-6e84d2d74cef",
+      "name": "Get Memory 1",
+      "credentials": {
+        "redis": {
+          "id": "m4AZvxGweEJDQ85o",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1960,
+        420
+      ],
+      "id": "93bf3e11-22e7-4aee-9793-3ce19a0462fe",
+      "name": "Wait",
+      "webhookId": "0ce34fd1-37cb-4435-98ee-c91879ce50db"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Message2",
+        "key": "={{ $('Set important variables').first().json.remoteJid }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1800,
+        420
+      ],
+      "id": "195594c5-ceb5-4109-a6eb-2c3a377c7564",
+      "name": "Get Memory 2",
+      "credentials": {
+        "redis": {
+          "id": "m4AZvxGweEJDQ85o",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtém os dados dos arrays dos nós anteriores\nconst message1Array = $('Get Memory 1').item.json.Message1;\nconst message2Array = $('Get Memory 2').item.json.Message2;\n\n// Verifica se as variáveis são arrays válidas e combina os elementos em strings\nconst combinedText1 = Array.isArray(message1Array) ? message1Array.join(' ') : '';\nconst combinedText2 = Array.isArray(message2Array) ? message2Array.join(' ') : '';\n\n// Retorna os valores combinados como variáveis\nreturn {\n  combinedText1,\n  combinedText2,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        420
+      ],
+      "id": "f6a2965d-9c62-4f85-aab5-7eac6fe47a3c",
+      "name": "Combine Text"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "87faaade-ed25-4265-bf10-622d8f16e115",
+              "leftValue": "={{ $json.combinedText1 }}",
+              "rightValue": "={{ $json.combinedText2 }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1400,
+        420
+      ],
+      "id": "d253e6bc-3be1-4403-a569-172a6cca132c",
+      "name": "Compare Memories"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Set important variables').first().json.remoteJid }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        420,
+        200
+      ],
+      "id": "7ec93793-bdc9-45c6-be9f-c3bd5cae97d0",
+      "name": "Delete Memory",
+      "credentials": {
+        "redis": {
+          "id": "m4AZvxGweEJDQ85o",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $('Set important variables').first().json.instance }}",
+        "remoteJid": "={{ $('Set important variables').first().json.remoteJid }}",
+        "messageText": "={{ $('AI Agent').first().json.output }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        780,
+        200
+      ],
+      "id": "26d1ef6e-8ef8-44f8-ac9a-41eb9365e39f",
+      "name": "Evolution API",
+      "credentials": {
+        "evolutionApi": {
+          "id": "jfDigVZGFWhtGIIR",
+          "name": "EvolutionAgente"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Message Type and parts parser. ",
+        "height": 500,
+        "width": 2360,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3640,
+        220
+      ],
+      "id": "b3794d10-7386-4d1e-bcb8-3957d7f0f678",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Output parser, message splitting and message memory deleting\n",
+        "height": 240,
+        "width": 760,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        140
+      ],
+      "id": "890de3e4-8f1f-49a4-b745-7427bc8497d3",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Output for testing",
+        "height": 200,
+        "width": 400,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        420
+      ],
+      "id": "11571930-4d1d-4857-83fd-3da21c3d601a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64",
+        "binaryPropertyName": "=data",
+        "options": {
+          "fileName": "={{ $json.fileName }}",
+          "mimeType": "={{ $json.mimetype }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -2640,
+        760
+      ],
+      "id": "82baa7a5-21c3-455f-84ee-4aa7a0b2fc68",
+      "name": "Convert to File2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set important variables').item.json.baseUrl }}/chat/getBase64FromMediaMessage/{{ $('Set important variables').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Set important variables').first().json.evoApiKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"message\": {\n        \"key\": {\n            \"id\": \"{{ $('Set important variables').first().json.dataId }}\"\n        }\n    },\n    \"convertToMp4\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2820,
+        760
+      ],
+      "id": "189fe3bc-ed79-457e-9c74-e908d4309d7a",
+      "name": "GetDocument"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $('Set important variables').item.json.wfsData.FileMangementRAG }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{$('Convert to File2').item}}",
+            "userId": "={{ $('Set important variables').item.json.userID }}",
+            "userWfs": "={{ $('Set important variables').item.json.wfsData }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object"
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "userWfs",
+              "displayName": "userWfs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -2460,
+        760
+      ],
+      "id": "19d9f4f0-b527-4c04-9f97-5bf70dd80de4",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $('Set important variables').first().json.remoteJid }}",
+        "messageData": "=Descripción Archivo:{{ $('Execute Workflow').first().json.output }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -2320,
+        760
+      ],
+      "id": "ca4e1735-0a23-4ca8-a2d9-0a59e3eb72a4",
+      "name": "FileMemory",
+      "credentials": {
+        "redis": {
+          "id": "m4AZvxGweEJDQ85o",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/o3-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1220,
+        760
+      ],
+      "id": "8e7b6303-1e68-4150-a7be-d51b28d803fa",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "dqulmKHeoVHyKowU",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "AsistentedeNotasTareasyRecordatorios",
+        "description": "Llama este agente para las tareas relacionadas con la toma de notas, lista de tareas pendientes y manejo de recordatorios.",
+        "workflowId": {
+          "__rl": true,
+          "value": "ciRYdrwFe942raYl",
+          "mode": "list",
+          "cachedResultName": "AGENTE_ASISTENTE_V1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `Tarea a delegar`, 'string') }}",
+            "userId": "={{ $('Set important variables').first().json.userID }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        700
+      ],
+      "id": "5aa48d7d-089a-42b3-bb63-fde8ae1f4f34",
+      "name": "AsistentedeNotasTareasyRecordatorios"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DatosDeContactos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Set important variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Delete Memory",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set important variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set important variables": {
+      "main": [
+        [
+          {
+            "node": "Message Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Audio Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AgenteComunicacional": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Investigador_RAG": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AgenteCalendario_Agenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Type": {
+      "main": [
+        [
+          {
+            "node": "GetAudio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Text Memory",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GetImage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GetDocument",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Analyse Image": {
+      "main": [
+        [
+          {
+            "node": "Image Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Analyse Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetAudio": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetImage": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Memory 1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Memory 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Memory 2": {
+      "main": [
+        [
+          {
+            "node": "Combine Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Text": {
+      "main": [
+        [
+          {
+            "node": "Compare Memories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Memory": {
+      "main": [
+        [
+          {
+            "node": "Get Memory 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Memory": {
+      "main": [
+        [
+          {
+            "node": "Get Memory 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audio Memory": {
+      "main": [
+        [
+          {
+            "node": "Get Memory 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Memories": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Memory": {
+      "main": [
+        [
+          {
+            "node": "Evolution API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File2": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetDocument": {
+      "main": [
+        [
+          {
+            "node": "Convert to File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "FileMemory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FileMemory": {
+      "main": [
+        [
+          {
+            "node": "Get Memory 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AsistentedeNotasTareasyRecordatorios": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "adcaddad-8afe-4c75-928d-96dad1bd2d0a",
+  "meta": {
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "SuY2sHYthPoq8flt",
+  "tags": []
+}

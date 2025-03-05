@@ -1,0 +1,359 @@
+{
+  "name": "GmailAgent_V1_TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "37d45d2f-4d56-41ea-8e91-8e9b4657d264",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        0
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ab380a2-a8d3-421c-ab4e-748ea8fb7904",
+              "name": "response",
+              "value": "Unable to perform task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "36dd1b6b-bdbb-47b9-8ee5-02e2c0b4a472",
+      "name": "Try Again",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -620,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', `email del contacto`, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', `el asunto del email`, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `el cuerpo del email`, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "56236200-b65d-453b-b347-2ce9b865dc8b",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -1080,
+        120
+      ],
+      "webhookId": "7745f286-a0dd-48ff-a883-650c18104050",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dGvqdUgGQYRKBdb0",
+          "name": "Gmail account JEREMIAS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39c2f302-03be-4464-a17a-d7cc481d6d44",
+              "name": "=response",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4e5856f8-45f2-42aa-922a-eebb2ffe489c",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -620,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.query}}",
+        "options": {
+          "systemMessage": "=Objetivo:\nEres un asistente diseñado para gestionar tareas de correo electrónico de manera eficiente, asegurando que los correos enviados sean claros, profesionales y cumplan con las reglas establecidas. Tu propósito es ofrecer al usuario una experiencia fluida y consistente en el manejo de sus comunicaciones por correo electrónico.\n\nHerramientas:\n\"SendEmail\": Enviar Mails, siempre cumpliendo el requerimiento y las reglas.\n\"GetEmails\": Obtener uno o varios emails, tú decides la cantidad.\n\"GetBySender\": Obtener uno o varios emails, filtrando por usuario que envío el email. \n\"Reply\": Responder a Email, Debes indicar el ID del email a responder. Por lo que tu tarea es encontrar el Email a responder, usar herramienta GetEmails para obtener el ID del mismo y usarlo para responder con el requerimiento del usuario.\n\nReglas Clave:\n\nCantidad de correos electrónicos:\n\nSi el usuario no especifica cuántos correos electrónicos manejar, asume por defecto que serán 5.\nEnvío de correos electrónicos:\n\nTodos los correos deben ser firmados con \"Jeremias\".\nEvita usar frases genéricas como \"[Your Name]\" u otras marcas de plantilla en las firmas.\n\nFormato de Firma Correcta:\n\nSaludos,  \nJeremias\n\nInstrucciones:\n\nRevisa que el contenido del correo sea claro, profesional y esté libre de frases genéricas o marcas de plantilla innecesarias.\nMantén un enfoque organizado y eficiente para procesar las solicitudes del usuario.\n\nEjemplo de Acción:\nTarea del Usuario: \"Envía un correo a Ana confirmando nuestra reunión.\"\nCorreo Resultante:\n\nHola Ana,  \n\nTe confirmo nuestra reunión.  \n\nSaludos,  \nJeremias\n\nTarea del Usuario: \"Revisa y responde 3 correos pendientes.\"\nAcción del Asistente: Procesa los 3 correos pendientes según las instrucciones del usuario, asegurándote de firmar cada uno correctamente como Jeremias.\n\nNotas Adicionales:\nAsegúrate de seguir las reglas establecidas en todo momento.\nProporciona al usuario una experiencia fluida y profesional en la gestión de sus correos electrónicos. No envíes correos duplicados ni realices tareas duplicadas. "
+        }
+      },
+      "id": "e2221526-ca58-4e1f-b55c-382c1f3f4b9e",
+      "name": "Email Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -1160,
+        -260
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.userId }}",
+        "tableName": "=chat_histories_{{ $json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1220,
+        0
+      ],
+      "id": "02a20b7e-b607-431e-9fc0-c6126d6da37c",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "h7gJQU9CguNVM4KL",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            },
+            {
+              "name": "userId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1360,
+        -260
+      ],
+      "id": "67b77ae9-7bec-42c2-b280-18ed6e6fd284",
+      "name": "Workflow Input Trigger"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Consume la API de Gmail para obtener emails filtrados por contacto",
+        "operation": "getAll",
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', `Cantidad de emails que indico el usuario`, 'number') }}",
+        "simple": false,
+        "filters": {
+          "sender": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sender', `quien es el usuario que pidio emails`, 'string') }}"
+        },
+        "options": {}
+      },
+      "id": "44055263-6323-4ac6-9afc-74a255a6af48",
+      "name": "GetBySender",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -940,
+        120
+      ],
+      "webhookId": "932e74e1-fd5d-4c7b-8f2b-115da238f744",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dGvqdUgGQYRKBdb0",
+          "name": "Gmail account JEREMIAS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Consume la API de Gmail para obtener emails sin filtro.\nUsa esta herramienta cuando te pidan Emails del mismo día, tarde, o días anteriores. ",
+        "operation": "getAll",
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', `Cantidad de emails a obtener`, 'number') }}",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -1080,
+        280
+      ],
+      "id": "59111ed7-f193-4190-be1c-44e55fe7fbeb",
+      "name": "GetEmails",
+      "webhookId": "26f9b4b1-6c9f-4304-9349-73c2b5462428",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dGvqdUgGQYRKBdb0",
+          "name": "Gmail account JEREMIAS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $fromAI('idMail', 'ID mail a responder') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `Cuerpo de mail a enviar`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -940,
+        280
+      ],
+      "id": "a2a74c90-9667-4b3a-b2f1-75d7bae73eef",
+      "name": "Reply",
+      "webhookId": "caacb473-3f5a-4f40-9002-21d2e7c67619",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dGvqdUgGQYRKBdb0",
+          "name": "Gmail account JEREMIAS"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Workflow Input Trigger": [
+      {
+        "json": {
+          "query": "Obtener los últimos 5 correos electrónicos recibidos hoy.",
+          "userId": "5492944250222"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "Email Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Email Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "Email Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetBySender": {
+      "ai_tool": [
+        [
+          {
+            "node": "Email Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetEmails": {
+      "ai_tool": [
+        [
+          {
+            "node": "Email Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply": {
+      "ai_tool": [
+        [
+          {
+            "node": "Email Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1851ba01-0316-4837-9d86-bd7b15766b35",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "5mTAVk61pXjyfmwq",
+  "tags": [
+    {
+      "createdAt": "2025-02-06T17:15:33.474Z",
+      "updatedAt": "2025-02-06T17:15:33.474Z",
+      "id": "4QgncxA4nLjPxBnW",
+      "name": "TEMPLATE"
+    }
+  ]
+}

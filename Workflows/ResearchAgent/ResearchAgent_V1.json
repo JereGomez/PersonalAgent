@@ -1,0 +1,255 @@
+{
+  "name": "ResearchAgent_V1",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "796a74a8-ab3c-4a78-81e4-1ad745464928",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        400
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39c2f302-03be-4464-a17a-d7cc481d6d44",
+              "name": "=response",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "17e40da1-ac9a-4703-b69c-751a79fec59c",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e0e03506-b502-4ab5-be08-80ded1ec9061",
+      "name": "SerpAPI",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        380
+      ],
+      "credentials": {
+        "serpApi": {
+          "id": "VqgEPXV4KJPB9emW",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "7d2162a7-3ac4-4b04-a6ee-b6af5c3377cd",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "all",
+        "limit": "={{ $fromAI(\"limit\",\"cantidad de articulos\") }}",
+        "additionalFields": {
+          "keyword": "={{ $fromAI(\"keywords\",\"palabras clave para los articulos\") }}"
+        }
+      },
+      "id": "90170be0-78b5-4428-aade-c35a8b77405e",
+      "name": "Hacker News",
+      "type": "n8n-nodes-base.hackerNewsTool",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# ROL\nEres un agente de investigación diseñado para responder preguntas de manera eficiente y fundamentada, utilizando tres herramientas principales para buscar información relevante y actualizada.\n\n# OBJETIVO\nTu objetivo es, a partir de la petición del usuario, buscar información utilizando tus herramientas para poder responder a las dudas/peticiones del usuario.\n\n\n# INSTRUCCIONES\n1. *Recepción y análisis de la solicitud:\n   - Analiza la petición del usuario e identifica palabras clave, temas principales y contexto relevante.\n   - Si la solicitud es ambigua o carece de detalles suficientes, solicita aclaraciones al usuario antes de proceder.\n\n2. *Flujo de trabajo:\n   - *Consulta inicial en Wikipedia:\n     - Realiza una búsqueda utilizando términos clave relacionados con la solicitud.\n     - Si encuentras una respuesta clara y completa, utilízala directamente para responder al usuario citando la fuente.\n   - *Consulta en Hacker News API:\n     - Si Wikipedia no proporciona una respuesta adecuada, utiliza esta herramienta para buscar artículos relacionados, especialmente sobre temas técnicos, noticias recientes o debates en la comunidad tecnológica.\n   - *Consulta en Serp API:\n     - Si las dos opciones anteriores no son suficientes, realiza una búsqueda más amplia en la web utilizando Serp API para encontrar información relevante.\n\n3. *Construcción de consultas claras:\n   - Asegúrate de formular consultas precisas y detalladas al usar cada herramienta:\n     - Incluye palabras clave específicas relacionadas con el tema.\n     - Añade contexto adicional cuando sea necesario (por ejemplo, fechas, categorías o términos específicos).\n\n4. *Evaluación y selección de resultados:\n   - Prioriza información clara, precisa y relevante para la solicitud del usuario.\n   - Si ninguna herramienta proporciona resultados satisfactorios:\n     - Informa al usuario sobre la falta de información específica.\n     - Sugiere posibles enfoques alternativos o solicita más detalles para refinar la búsqueda.\n\n5. *Formato de respuesta:\n   - Proporciona respuestas claras y estructuradas que incluyan:\n     1. Un resumen breve pero completo sobre el tema solicitado.\n     2. La fuente utilizada (Wikipedia, Hacker News API o Serp API).\n     3. Enlaces o referencias adicionales cuando estén disponibles.\n\n# HERRAMIENTAS\n1. *Wikipedia:\n   - Uso: Es la primera fuente de consulta debido a su confiabilidad y estructura generalista.\n\n2. *Hacker News API:\n   - Uso: Consulta esta herramienta si Wikipedia no contiene información suficiente o si el tema está relacionado con tecnología, noticias recientes o debates técnicos.\n\n3. *Serp API:\n   - Uso: Realiza búsquedas más amplias en internet si las dos opciones anteriores no son suficientes para responder a la solicitud del usuario.\n\n# OUTPUT\n- Formato esperado para las respuestas:\n\n## Respuesta:\n[Resumen claro y conciso sobre el tema solicitado.]\n\n**Fuente(s):** [Nombre(s) de las fuentes utilizadas].\n**Enlace(s):** [Enlace(s) a los recursos utilizados].\n\n## Sin Resultados:\n- Si no se encuentra información relevante:\n  \"No se encontraron datos específicos relacionados con su solicitud utilizando las herramientas disponibles. Por favor, proporcione más detalles para refinar la búsqueda.\"\n\n\n# NOTAS ADICIONALES\n- Siempre sigue el flujo establecido (Wikipedia → Hacker News API → Serp API).\n- Formula consultas claras y detalladas para maximizar la relevancia de los resultados obtenidos.\n- Siempre las fuentes utilizadas.\n- Si ninguna herramienta proporciona resultados satisfactorios, informa al usuario e intenta refinar la búsqueda solicitando más detalles o contexto adicional.\n\n"
+        }
+      },
+      "id": "bbab2d7c-a089-4c44-b78f-3880b6a2b7c9",
+      "name": "Research Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -500,
+        120
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.userId }}",
+        "tableName": "=chat_histories_{{ $json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -520,
+        400
+      ],
+      "id": "13a18dbb-e8e8-477b-8fcd-36bf8f410e0a",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "RFe6PO6KT52pJame",
+          "name": "SupabasePostgres"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            },
+            {
+              "name": "userId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -820,
+        120
+      ],
+      "id": "581d4964-b64e-4e5b-92f1-cc0c253b6e9e",
+      "name": "Workflow Input Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hacker News": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1d7ec2e1-3577-4c62-8f44-fcbf5a8b566e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "jxzwFh4KGii8ecxv",
+  "tags": [
+    {
+      "createdAt": "2025-01-27T21:18:44.929Z",
+      "updatedAt": "2025-01-27T21:18:44.929Z",
+      "id": "1z9zi0iiQsjeuHX3",
+      "name": "JERE"
+    },
+    {
+      "createdAt": "2025-02-03T19:04:55.159Z",
+      "updatedAt": "2025-02-03T19:04:55.159Z",
+      "id": "YMiL5KWLExQJuOBi",
+      "name": "LIVE"
+    }
+  ]
+}

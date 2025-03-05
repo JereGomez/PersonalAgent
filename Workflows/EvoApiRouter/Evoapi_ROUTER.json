@@ -1,0 +1,341 @@
+{
+  "name": "Evoapi_ROUTER",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "agentsTable",
+          "mode": "list",
+          "cachedResultName": "agentsTable"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "userId",
+              "value": "={{ $json.remoteJid.split('@')[0].trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -940,
+        -140
+      ],
+      "id": "a747a4c1-9870-4053-a9b2-65483fd6c1d5",
+      "name": "Postgres1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "h7gJQU9CguNVM4KL",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "66978fe3-b22f-46ed-94f2-3334cc10ee8e",
+              "leftValue": "={{ $json.mainWfId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -660,
+        -140
+      ],
+      "id": "e9761728-4585-4572-8ebc-f277e3c2fd6b",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -240
+      ],
+      "id": "f3b8904c-2082-463e-bb9c-0b0412f71dff",
+      "name": "n8n1",
+      "credentials": {
+        "n8nApi": {
+          "id": "xLaP6c3LrqTpDPWP",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Obtener los workflows desde el input\nconst workflows = $input.all(); \n\n// Filtrar workflows que coincidan con el userId en su nombre\nconst matchedWorkflows = workflows.filter(wf => wf.json.name.includes($('VARIABLES').first().json.remoteJid.split('@')[0]))\n\n\nif (matchedWorkflows) {\n    // Mapeo de nombres de agentes con sus identificadores\n  const agents = {\n    GmailAgent: \"\",\n    GoogleCalendarAgent: \"\",\n    ProjectsAgent: \"\",\n    MainAgent: \"\",\n    FileMangementRAG: \"\"\n  };\n  \n    const wfsData = matchedWorkflows.map(wf =>{\n      if (wf.json.name.includes(\"GmailAgent\")) {\n        agents.GmailAgent =wf.json.id;\n      } else if (wf.json.name.includes(\"GoogleCalendarAgent\")) {\n          agents.GoogleCalendarAgent = wf.json.id;\n      } else if (wf.json.name.includes(\"ProjectsAgent\")) {\n          agents.ProjectsAgent = wf.json.id;\n      } else if (wf.json.name.includes(\"PA_V1\")) {\n          agents.MainAgent = wf.json.id;\n      }\n      else if (wf.json.name.includes(\"FileMangementRAG\")) {\n          agents.FileMangementRAG = wf.json.id;\n      }\n    } )\n    return {agents};\n} else {\n    return [{ json: { error: \"Workflow not found\" } }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        -240
+      ],
+      "id": "9b32d0a1-b202-4c86-95fe-c3b5d3071fe1",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa3acc54-d1e5-4250-96be-b1aca92474d8",
+              "name": "remoteJid",
+              "value": "={{ $json.body.body?.data.key.remoteJid ||$json.body.data.key.remoteJid }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1260,
+        -140
+      ],
+      "id": "e180073e-1e66-46e3-8197-19d015753425",
+      "name": "VARIABLES"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Postgres1').first().json.wfUrl }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "wfsData",
+              "value": "={{ $json.agents }}"
+            },
+            {
+              "name": "webhook",
+              "value": "={{ $('Webhook').first().json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        -240
+      ],
+      "id": "21f96e7c-a2cd-42cb-aae9-2a90e4fa24cb",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "messageRouter",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1480,
+        -140
+      ],
+      "id": "d8795f08-d7ce-4de0-907b-dfa8c3f93df4",
+      "name": "Webhook",
+      "webhookId": "c16ae954-16c6-4910-a283-846218e29593"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8npanel.1vmxbq.easypanel.host",
+            "user-agent": "axios/1.7.7",
+            "content-length": "1108",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "content-type": "application/json",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8npanel.1vmxbq.easypanel.host",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "dd1bad7b6af3",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "event": "messages.upsert",
+            "instance": "AgentInstance",
+            "data": {
+              "key": {
+                "remoteJid": "5492944250222@s.whatsapp.net",
+                "fromMe": false,
+                "id": "3FDA4963497BD2914E1C"
+              },
+              "pushName": "JereGomez",
+              "status": "DELIVERY_ACK",
+              "message": {
+                "messageContextInfo": {
+                  "deviceListMetadata": {
+                    "senderKeyHash": "MkA0ZQu7vhGV6A==",
+                    "senderTimestamp": "1740486244",
+                    "recipientKeyHash": "UA5Ot26E5VbUpQ==",
+                    "recipientTimestamp": "1739991776"
+                  },
+                  "deviceListMetadataVersion": 2
+                },
+                "conversation": "Gestionas mis mails? Dame mis ultmios 5 mails de hoy y enviale un mail a \"jeregomezgiglio12@gmail.com\" preguntándole como va su dia"
+              },
+              "contextInfo": {
+                "expiration": 0,
+                "ephemeralSettingTimestamp": "0",
+                "disappearingMode": {
+                  "initiator": "CHANGED_IN_CHAT"
+                }
+              },
+              "messageType": "conversation",
+              "messageTimestamp": 1740678350,
+              "instanceId": "c943c05b-3124-418f-8b92-fa356ddf345f",
+              "source": "unknown"
+            },
+            "destination": "https://n8npanel.1vmxbq.easypanel.host/webhook/messageRouter",
+            "date_time": "2025-02-27T14:45:44.810Z",
+            "sender": "5492944997722@s.whatsapp.net",
+            "server_url": "https://n8nautomations-evolution-api.1vmxbq.easypanel.host",
+            "apikey": "A92CB30AC9D2-408F-BEE3-64D58B84412B"
+          },
+          "webhookUrl": "https://n8npanel.1vmxbq.easypanel.host/webhook/messageRouter",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Postgres1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "n8n1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VARIABLES": {
+      "main": [
+        [
+          {
+            "node": "Postgres1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "VARIABLES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "3cdff6b8-bb80-48ef-ad76-c8b42949e414",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "A0QDMUVuUStloygc",
+  "tags": [
+    {
+      "createdAt": "2025-02-03T20:09:03.908Z",
+      "updatedAt": "2025-02-03T20:09:03.908Z",
+      "id": "l5o37CllqtpfQ13k",
+      "name": "DEV"
+    }
+  ]
+}

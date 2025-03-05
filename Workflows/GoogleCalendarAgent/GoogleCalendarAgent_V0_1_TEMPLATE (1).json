@@ -1,0 +1,419 @@
+{
+  "name": "GoogleCalendarAgent_V0.1_TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "714b10da-e92f-4263-9177-2ecba01c3fc7",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1260,
+        400
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ab380a2-a8d3-421c-ab4e-748ea8fb7904",
+              "name": "response",
+              "value": "Unable to perform task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b06cbaf5-b3c3-4a94-9c4a-2f4be5c7e760",
+      "name": "Try Again",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -180,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39c2f302-03be-4464-a17a-d7cc481d6d44",
+              "name": "=response",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6f426b25-e9c6-432c-80dc-d98a587c4311",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -180,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "4ab43fd2aa02199b6ebde0be6716eae42aed316907c059a7142f3aedfccdfeae@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "AIAgent_Testing"
+        },
+        "start": "={{ $fromAI(\"fechaInicio\",\"la fecha de inicio según el requerimiento del usuario\") }}",
+        "end": "={{ $fromAI(\"fechaFin\",\"la fecha de finalización según el requerimiento del usuario\")}}",
+        "additionalFields": {
+          "attendees": [],
+          "summary": "={{ $fromAI(\"nombre\",\"el nombre del evento de calendario\") }}"
+        }
+      },
+      "id": "3a554fb0-8120-4c98-9acb-489eb278a13b",
+      "name": "Create Event",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        420
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "V5aTRI2Uahkj8SkW",
+          "name": "googleCalendarOAuth2Api_5492944123456"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "4ab43fd2aa02199b6ebde0be6716eae42aed316907c059a7142f3aedfccdfeae@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "AIAgent_Testing"
+        },
+        "start": "={{ $fromAI(\"fechaInicio\",\"la fecha de inicio según el requerimiento del usuario\") }}",
+        "end": "={{ $fromAI(\"fechaFin\",\"la fecha de finalización según el requerimiento del usuario\")}}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $fromAI(\"mailInvitado\",\"el email del invitado requerido por el usuario\") }}"
+          ],
+          "repeatFrecuency": "={{ $fromAI(\"frecuenciaDelEvento\",\"Daily, Weekly, Monthly, Yearly\") }}",
+          "repeatUntil": "={{ $fromAI(\"fechaFinalizacionDeRepeticiones\",\"fecha en la que el evento no se repite mas\") }}",
+          "summary": "={{ $fromAI(\"nombre\",\"el nombre del evento de calendario\") }}"
+        }
+      },
+      "id": "6174d46d-ef39-46b2-bd49-17cc9d0e4719",
+      "name": "Create Event with Attendee",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.1,
+      "position": [
+        -660,
+        420
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "V5aTRI2Uahkj8SkW",
+          "name": "googleCalendarOAuth2Api_5492944123456"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "4ab43fd2aa02199b6ebde0be6716eae42aed316907c059a7142f3aedfccdfeae@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "AIAgent_Testing"
+        },
+        "options": {
+          "timeMin": "={{ $fromAI(\"diaAnterior\", \"El dia anterior al requerido por el usuario\") }}",
+          "timeMax": "={{ $fromAI(\"diaPosterior\", \"El dia posterior al requerido por el ususario\") }}"
+        }
+      },
+      "id": "c8a060a4-7ac4-45d8-8527-7ff771b87540",
+      "name": "Get Events",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        420
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "V5aTRI2Uahkj8SkW",
+          "name": "googleCalendarOAuth2Api_5492944123456"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=## ROL/OBJETIVO ##\nEres un asistente diseñado para gestionar eventos en el calendario de manera eficiente y precisa. Tu propósito es garantizar que las acciones relacionadas con la creación, actualización y consulta de eventos se realicen siguiendo las reglas establecidas, proporcionando al usuario una experiencia fluida y profesional.\n\n\n## HERRAMIENTAS Y REGLAS DE USO ##\nDía, Fecha y Hora Actuales:\n{{ new Date().toLocaleString('es-ar', {  weekday: 'long' }) }} {{ $now.format('DD HH:mm') }} \nSi el usuario menciona un día de la semana en lugar de una fecha exacta (ejemplo: \"jueves\", \"lunes\"), debes convertir ese día en la fecha exacta más cercana en el futuro.\n\nCreate Events:\nUso: Cuando el evento no tiene asistentes.\nDuración Predeterminada: Si no se especifica una fecha de finalización, el evento tendrá una duración de 60 minutos.\n\nCreate Event with Attendee:\nUso: Cuando el evento incluye al menos un asistente.\nDuración Predeterminada: Si no se especifica una fecha de finalización, el evento tendrá una duración de 60 minutos.\n\n\nGet Events:\nUso: Para listar o resumir eventos programados en un día específico.\nRegla: Asegúrate de que los eventos obtenidos se alineen con la solicitud del usuario antes de presentarlos. Obtendrás eventos del día anterior hasta el siguiente al requerido por el usuario. Filtra esos eventos según la fecha que se pide.\n\n\nDelete Events:\nUso: Para eliminar evento específico por ID.\nRegla: Asegúrate de obtener el evento según la información del usuario, con el ID del evento obtenido usarás esta herramienta para eliminarlo.\n\n\n## INSTRUCCIONES ##\n\nCrear Eventos:\nSi el evento no tiene asistentes:\nUtiliza la herramienta Crear Evento.\nSi el evento incluye asistentes:\nUtiliza la herramienta Crear Evento con Asistente.\nSi el usuario indica cantidad de repeticiones, incluirlas. Obligatoriamente una de las siguiente frecuencias: Daily, Weekly, Monthly, Yearly. Si no se repite es Daily\nSi no indica, la fecha de finalización es la misma que la fecha de comienzo.\nSi el usuario indica frecuencia con la que se repite el evento, incluir. Si no indica la cantidad de repeticiones es 1.\nSi el evento se repite, crear una única vez con los parámetros necesarios, no crear múltiples veces.\nCorroborar que el evento es el día que el usuario pidió, verificando fecha y nombre del dia.\n\nObtener Eventos:\nUsa la herramienta Obtener Eventos para listar o resumir eventos de un día específico según la solicitud del usuario.\nDuración de los Eventos:\nSi no se especifica una fecha de finalización, asume una duración predeterminada de 60 minutos.\n\nEliminar Eventos:\nUtilizar la herramienta de \"Obtener eventos\"para obtener el evento a eliminar según las indicaciones del usuario. \nUtilizar el ID del evento obtenido y eliminarlo con la herramienta \"Eliminar Eventos(Delete Events)\".\n\nConversión de días de semana a fecha:\nIdentifica qué día de la semana mencionó el usuario.\nCalcula la fecha exacta del próximo día de la semana indicado.\nUsa esa fecha en la creación del evento.\nEjemplo de Conversión Correcta:\nHoy es miércoles 29 de enero.\nEl usuario dice: \"Crea una reunión el jueves\".\nLa próxima fecha que corresponde es jueves 30 de enero.\nEl evento se crea correctamente para el 30 de enero en lugar de un día incorrecto.\nEl usuario dice: \"Todos los miércoles\"\nHoy es: miércoles 29, próximo martes es: martes 4 de febrero\nPróximo jueves, a partir de dos semanas\nLa fecha correcta es jueves 13 de febrero. \n\nComunicación:\nProporciona al usuario confirmaciones claras y concisas sobre las acciones realizadas.\n\n## EJEMPLOS ##\nTarea del Usuario: \"Crea un evento de reunión mañana a las 10:00 AM.\"\nAcción del Asistente:\nHerramienta: Crear Evento\nDetalles del Evento:\nTítulo: \"Reunión\"\nFecha: Mañana\nHora de inicio: 10:00 AM\nDuración: 60 minutos\n\nTarea del Usuario: \"Programa una reunión con Ana para el próximo lunes a las 2:00 PM.\"\nAcción del Asistente:\nHerramienta: Crear Evento con Asistente\nDetalles del Evento:\nTítulo: \"Reunión con Ana\"\nFecha: Próximo lunes\nHora de inicio: 2:00 PM\nAsistente: Ana\nDuración: 60 minutos\n\nTarea del Usuario: \"Dime qué eventos tengo mañana.\"\nAcción del Asistente:\nHerramienta: Obtener Eventos\nResultado: Proporciona un resumen de los eventos programados para mañana.\n\nTarea del Usuario: \"Eliminar reunion Weekly planner de mañana\"\nAcción del Asistente:\nHerramienta: Obtener Eventos y Eliminar Eventos\nResultado: Buscar Evento para obtener el ID, usar ese ID para eliminar el evento.\n\n## INFORMACIÓN IMPORTANTE y ACLARACIONES ##\nSiempre verifica que los detalles del evento coincidan con las instrucciones del usuario antes de confirmar. Verifica más de una vez las fechas y días de semana antes de devolver información o crear eventos.\nMantén un enfoque organizado y asegúrate de seguir las reglas de duración y uso de herramientas.\nNo repitas tareas, no revuelvas datos duplicados, no crees eventos duplicados. "
+        }
+      },
+      "id": "2646cece-db77-4915-aa57-bdf5aeeabe14",
+      "name": "Calendar Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -940,
+        100
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "jeregomezgiglio12@gmail.com",
+          "mode": "list",
+          "cachedResultName": "jeregomezgiglio12@gmail.com"
+        },
+        "updateFields": {
+          "repeatFrecuency": "",
+          "repeatHowManyTimes": 1
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -340,
+        420
+      ],
+      "id": "dbb07770-9864-4e45-949e-155d9c1f2096",
+      "name": "Google Calendar1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "V5aTRI2Uahkj8SkW",
+          "name": "googleCalendarOAuth2Api_5492944123456"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            },
+            {
+              "name": "userId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1120,
+        100
+      ],
+      "id": "9de39cc3-bc14-4eb0-a81c-207719fa2401",
+      "name": "Workflow Input Trigger"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.userId }}",
+        "tableName": "=chat_histories_{{ $json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1060,
+        400
+      ],
+      "id": "05d8681f-5591-453d-b509-b662625d7aec",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "RFe6PO6KT52pJame",
+          "name": "SupabasePostgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "4ab43fd2aa02199b6ebde0be6716eae42aed316907c059a7142f3aedfccdfeae@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "AIAgent_Testing"
+        },
+        "eventId": "={{ $fromAI('eventID', \"ID del evento a eliminar\")}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -500,
+        420
+      ],
+      "id": "5c88d777-f520-4139-810b-ef9557334338",
+      "name": "Delete Events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "V5aTRI2Uahkj8SkW",
+          "name": "googleCalendarOAuth2Api_5492944123456"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Workflow Input Trigger": [
+      {
+        "json": {
+          "query": "Elimina todos los eventos creados en estos tests",
+          "userId": 5492944250222
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event with Attendee": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Events": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Events": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ba946ed0-630f-45c0-b95b-0b5ab39dc6b8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "VDELKfgQ3GKCeCG1",
+  "tags": [
+    {
+      "createdAt": "2025-02-06T17:15:33.474Z",
+      "updatedAt": "2025-02-06T17:15:33.474Z",
+      "id": "4QgncxA4nLjPxBnW",
+      "name": "TEMPLATE"
+    }
+  ]
+}

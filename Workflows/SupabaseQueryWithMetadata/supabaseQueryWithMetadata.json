@@ -1,0 +1,260 @@
+{
+  "name": "supabaseQueryWithMetadata",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "load",
+        "tableName": {
+          "__rl": true,
+          "value": "=documents_ {{ $('Workflow Input Trigger').item.json.userId }}",
+          "mode": "id"
+        },
+        "prompt": "={{ $json.text }}",
+        "topK": "=5",
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "id": "60806649-625e-4e27-a150-6f2c0bdda3a3",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        460,
+        320
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "DeB4XVDka63BlBUZ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "25b1bfa7-0217-4187-9366-e81db4ba20e5",
+      "name": "Aggregate2",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        860,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "quey"
+            },
+            {
+              "name": "userId"
+            }
+          ]
+        }
+      },
+      "id": "ba15e2b6-3ba5-482f-9e8b-9856f1bb8c75",
+      "name": "Workflow Input Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b447b97d-b9f3-4e60-8025-f45f4b1d6677",
+              "name": "response",
+              "value": "={{ $json.data.toJsonString() }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1080,
+        320
+      ],
+      "id": "5d4cbbe6-c3ad-45d9-90d4-d25288b16759",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        380,
+        560
+      ],
+      "id": "4b8d8d50-5d3c-4d42-919c-bc833fc3c2cb",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "= {{ $json.quey }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "#ROL\nSos un creador de prompts profesional para bases de datos vectoriales, creas prompts altamente eficientes basándote en el requerimiento de un usuario. \nTienes que crear un prompt para sacar el máximo provecho de la base de datos a partir de la peticion del usuario.\n\n\nSALIDA:\nTu respuesta debe ser lo más clara y eficiente posible en formato texto.\nEJEMPLO:\nInput: \"resumen libro x\"\nOutput: \"\"Proporciona un resumen general del libro 'Céntrate (Deep Work)' de Cal Newport.\""
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        120,
+        320
+      ],
+      "id": "85b3fbbd-1646-46d0-956b-a4a13ad5550d",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -60,
+        540
+      ],
+      "id": "6a7a92f6-8d97-4acf-8845-d5025d8b27de",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Workflow Input Trigger": [
+      {
+        "json": {
+          "quey": "archivos presentes en la base de datos",
+          "userId": "5492944250222"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Supabase Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bc46c66f-7a3c-41a5-a5fe-9a51af2fc67a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "DgemYnPdQ0h0b2BN",
+  "tags": [
+    {
+      "createdAt": "2025-02-03T19:06:14.434Z",
+      "updatedAt": "2025-02-03T19:06:14.434Z",
+      "id": "GGf2XmduEVYSBLmj",
+      "name": "REUSABLE"
+    },
+    {
+      "createdAt": "2025-02-03T19:04:55.159Z",
+      "updatedAt": "2025-02-03T19:04:55.159Z",
+      "id": "YMiL5KWLExQJuOBi",
+      "name": "LIVE"
+    }
+  ]
+}

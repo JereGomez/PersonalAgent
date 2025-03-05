@@ -1,0 +1,299 @@
+{
+  "name": "TimeManagementDEV",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        260
+      ],
+      "id": "81cdf947-f7d1-4e4b-9a15-38fc0b495d88",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "4ab43fd2aa02199b6ebde0be6716eae42aed316907c059a7142f3aedfccdfeae@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "AIAgent_Testing"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', `Momento en el que hay que recordar al usuario`, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', `Duración de 5 minutos`, 'string') }}",
+        "useDefaultReminders": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Use_Default_Reminders', ``, 'boolean') }}",
+        "additionalFields": {
+          "description": "={{ $('When Executed by Another Workflow').first().json.remoteJid }}/ {{ $fromAI('Descripcion', 'descripcion que se le mostrara al usuario del recordatorio ') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -220,
+        260
+      ],
+      "id": "2cca2e66-3dc5-4725-9800-6bffabc018bf",
+      "name": "Crear Recordatorio",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "RB2qN9z365AvCq4o",
+          "name": "Google Calendar JEREMIAS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "calendarId": {
+          "__rl": true,
+          "value": "4ab43fd2aa02199b6ebde0be6716eae42aed316907c059a7142f3aedfccdfeae@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "AIAgent_Testing"
+        },
+        "triggerOn": "eventStarted",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        400
+      ],
+      "id": "a974dcce-f2e7-4776-b456-dc887336c441",
+      "name": "Google Calendar Trigger",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "RB2qN9z365AvCq4o",
+          "name": "Google Calendar JEREMIAS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "={{ $json.instance }}",
+        "remoteJid": "={{ $json.remoteJid }}",
+        "messageText": "={{ $json.recordatorio }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        400
+      ],
+      "id": "f5bb1d41-e4ac-494b-a277-df7c279f756b",
+      "name": "Evolution API1",
+      "credentials": {
+        "evolutionApi": {
+          "id": "jfDigVZGFWhtGIIR",
+          "name": "EvolutionAgente"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "\n\n{\n\"query\": \n\"quiero que las 17:32pm me hagas acordar de entrenar\",\n\"remoteJid\": \n\"5492944250222@s.whatsapp.net\"\n}\n"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -580,
+        60
+      ],
+      "id": "55137cb1-df07-4d13-ac15-30c964ebfc50",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "321f990c-0706-4903-aa94-d3eddb407476",
+              "name": "baseUrl",
+              "value": "https://n8nautomations-evolution-api.1vmxbq.easypanel.host",
+              "type": "string"
+            },
+            {
+              "id": "4bad4806-68f8-436a-96e8-5fc8586aa7f8",
+              "name": "instance",
+              "value": "AgentInstance",
+              "type": "string"
+            },
+            {
+              "id": "9cb3a5b5-76a2-4948-a010-96f9430391b3",
+              "name": "remoteJid",
+              "value": "={{ $json.description.split(\"/\")[0].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "36c43fdf-6ffd-4c94-9b4f-4739fe0c8d66",
+              "name": "recordatorio",
+              "value": "={{ $json.description.split(\"/\")[1].trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        400
+      ],
+      "id": "4ada28e4-f43f-4b6c-9dde-2fb5c7bb94cd",
+      "name": "Variables"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# ROL\nSos el encargado de manejar recordatorios de diferentes usuarios. Ayudando a la organización y productividad en el día a día.\n\n\n\n# OBJETIVO\nYu objetivo es, a partir de la petición del usuario, gestionar recordatorios utilizando Google Calendar como herramienta.\n\n\n# INSTRUCCIONES\n*Procesar petición del usuario.\n*Determinar características del recordatorio.\n*Crear recordatorio con ID del usuario y la descripción del recordatorio.\n*Con recordatorio creado exitosamente, dar mensaje de respuesta claro indicando que se le recordara al usuario(NO MENCIONAR EVENTO GOOGLE CALENDAR).\n*Si ocurre un error o falta información indicar al usuario.\n\n# HERRAMIENTAS\n* Crear Recordatorio: crear eventos Google calendar, los cuales funcionaran como recordatorios.\nDía y Horas Actuales: {{ new Date().toLocaleString('es-ar', {  weekday: 'long' }) }} {{ $now.format('DD HH:mm') }} \n\n\n# SALIDA\nEnvía un mensaje indicando que harás el recordatorio, no envíes ningún link/enlace de google Calendar ni menciones esta herramienta. Esta herramienta es interna de la empresa y no debe saberse nada al respecto. Con explicar que se hará el recordatorio en el tiempo/hora mencionadas es suficiente.\n\n# NOTAS ADICIONALES\nRecuerda identificar la fecha y  hora  correcta a utilizar basándote en la fecha y hora actual.\nDía y Horas Actuales: {{ new Date().toLocaleString('es-ar', {  weekday: 'long' }) }} {{ $now.format('DD HH:mm') }} "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -400,
+        60
+      ],
+      "id": "7f618942-f311-4882-9bbf-6629c7f59028",
+      "name": "TimeManagement"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "haceme acordar en 5 miniutos que apague el horno",
+          "remoteJid": "5492944250222@s.whatsapp.net"
+        }
+      }
+    ],
+    "Google Calendar Trigger": [
+      {
+        "json": {
+          "kind": "calendar#event",
+          "etag": "\"3480326552970000\"",
+          "id": "7j7v7lbeuu2k16fgfpld7nt9js",
+          "status": "confirmed",
+          "htmlLink": "https://www.google.com/calendar/event?eid=N2o3djdsYmV1dTJrMTZmZ2ZwbGQ3bnQ5anMgNGFiNDNmZDJhYTAyMTk5YjZlYmRlMGJlNjcxNmVhZTQyYWVkMzE2OTA3YzA1OWE3MTQyZjNhZWRmY2NkZmVhZUBn",
+          "created": "2025-02-21T18:41:16.000Z",
+          "updated": "2025-02-21T18:41:16.485Z",
+          "summary": "reunion con morla",
+          "creator": {
+            "email": "jeregomezgiglio12@gmail.com"
+          },
+          "organizer": {
+            "email": "4ab43fd2aa02199b6ebde0be6716eae42aed316907c059a7142f3aedfccdfeae@group.calendar.google.com",
+            "displayName": "AIAgent_Testing",
+            "self": true
+          },
+          "start": {
+            "dateTime": "2025-02-21T17:00:00-03:00",
+            "timeZone": "America/Argentina/Buenos_Aires"
+          },
+          "end": {
+            "dateTime": "2025-02-21T18:00:00-03:00",
+            "timeZone": "America/Argentina/Buenos_Aires"
+          },
+          "iCalUID": "7j7v7lbeuu2k16fgfpld7nt9js@google.com",
+          "sequence": 0,
+          "reminders": {
+            "useDefault": true
+          },
+          "eventType": "default"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "TimeManagement",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Recordatorio": {
+      "ai_tool": [
+        [
+          {
+            "node": "TimeManagement",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar Trigger": {
+      "main": [
+        [
+          {
+            "node": "Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "TimeManagement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Variables": {
+      "main": [
+        [
+          {
+            "node": "Evolution API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "02f19e4c-ed8e-4b86-9b4f-3de02cb9beb6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "d4kta57XgYASWvvX",
+  "tags": []
+}

@@ -1,0 +1,287 @@
+{
+  "name": "SOCIAL_COMUNICATION_V1",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -620,
+        340
+      ],
+      "id": "e3dbd92e-5c0f-42a1-9ebe-a0c588f8953b",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.userId }}",
+        "tableName": "=chat_histories_{{ $json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -460,
+        340
+      ],
+      "id": "8d04d909-4a5b-4b80-9cd9-55989e89e871",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "h7gJQU9CguNVM4KL",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            },
+            {
+              "name": "userId"
+            },
+            {
+              "name": "userWfs"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -780,
+        80
+      ],
+      "id": "c389b0c6-55c5-4301-bdd1-7cf1b1b6f038",
+      "name": "Workflow Input Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.query}}",
+        "options": {
+          "systemMessage": "=#ROL/OBJETIVO\nSos el Gestor Maestro de Comunicaciones, el núcleo de gestión de todas las interacciones comunicacionales del usuario. Tu objetivo es administrar, delegar y validar tareas relacionadas con cualquier canal de comunicación. Garantizas claridad, precisión y profesionalismo en cada acción, adaptándote dinámicamente a las herramientas disponibles.\n\n#INSTRUCCIONES\n1. Interpretación y Delegación Estratégica\n2: Seleccionar la herramienta/sub-agente adecuado\n3: Delegar la tarea de manera clara y especifica al agente seleccionado\n4: Validar resultados\n5: Retroalimentación al usuario\n\n#HERRAMIENTAS/SUB-AGENTES\n📨 GmailAgent: Agente de Gestión integral de emails: envío, búsqueda, etiquetado, eliminación. Siempre que debas realizar alguna tarea relacionada con correos electrónicos / mails, delega la tarea a este agente.\n\n\n#INFORMACIÓN IMPORTANTE\nSi una herramienta falla, intentar nuevamente antes de reportar:\nValidación: Confirmar que María no tiene correos automáticos de \"fuera de oficina\".\nRespuesta:\n📨 Email enviado a María. Copia oculta a tu jefe (por política de la empresa). Estado: ✔️ Entregado."
+        }
+      },
+      "id": "280fdd7c-47f3-485a-b4f0-2e49096a9c1f",
+      "name": "Comunication Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -480,
+        80
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ab380a2-a8d3-421c-ab4e-748ea8fb7904",
+              "name": "response",
+              "value": "Unable to perform task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "97728cab-a3bd-4033-a939-402102e86b36",
+      "name": "Try Again1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -100,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39c2f302-03be-4464-a17a-d7cc481d6d44",
+              "name": "=response",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f415bacf-b084-4477-9222-63894199c81a",
+      "name": "Success1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "name": "GmailAgent",
+        "description": "Usa esta herramienta para delegar tareas al agente de Gmail. ",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $('Workflow Input Trigger').item.json.userWfs.GmailAgent }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `Tarea a delegar`, 'string') }}",
+            "userId": "={{ $('Workflow Input Trigger').item.json.userId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        340
+      ],
+      "id": "d9e1a3b5-0e51-475b-b535-ad9d28597a17",
+      "name": "GmailAgent"
+    }
+  ],
+  "pinData": {
+    "Workflow Input Trigger": [
+      {
+        "json": {
+          "query": "Solicitud: \n1) Obtener los últimos 5 correos electrónicos recibidos en el día de hoy (27 de febrero de 2025). \n2) Enviar un correo a la dirección jeregomezgiglio12@gmail.com con el siguiente mensaje: \n   Asunto: Consulta diaria\n   Cuerpo: Hola, ¿cómo va tu día?\n\nPor favor, confirma la ejecución y presenta el listado de los 5 correos obtenidos.",
+          "userId": "5492944250222",
+          "userWfs": {
+            "GmailAgent": "vLt4PqS5HCYr0DoL",
+            "GoogleCalendarAgent": "p34hLuYkG2pDkrXp",
+            "ProjectsAgent": "6HaezZPbFfrm6Z6j",
+            "MainAgent": "jgxSh2Lk6AJ0xX0f",
+            "FileMangementRAG": "vFNE2CDIImfP4Q9x"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Comunication Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Comunication Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "Comunication Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comunication Agent": {
+      "main": [
+        [
+          {
+            "node": "Success1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try Again1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GmailAgent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Comunication Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1843bfba-5b35-41fd-913d-bca74f44196c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "33FPgw1UdWEqAw15",
+  "tags": [
+    {
+      "createdAt": "2025-01-27T21:18:44.929Z",
+      "updatedAt": "2025-01-27T21:18:44.929Z",
+      "id": "1z9zi0iiQsjeuHX3",
+      "name": "JERE"
+    }
+  ]
+}

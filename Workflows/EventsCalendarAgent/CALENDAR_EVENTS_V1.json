@@ -1,0 +1,284 @@
+{
+  "name": "CALENDAR_EVENTS_V1",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "7d00d935-f16b-4f96-80ea-0aa7f02ed13e",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1180,
+        300
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "KGc9gnXUlvFVTnsL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ab380a2-a8d3-421c-ab4e-748ea8fb7904",
+              "name": "response",
+              "value": "Unable to perform task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bb90932d-ffb8-4f31-abfd-32587b225957",
+      "name": "Try Again",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -620,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39c2f302-03be-4464-a17a-d7cc481d6d44",
+              "name": "=response",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2a4df859-2739-42d0-a558-f08c9dca705f",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -620,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.userId }}",
+        "tableName": "=chat_histories_{{ $json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1000,
+        300
+      ],
+      "id": "9155d479-69f8-44b5-b1e6-027e61e76e78",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "h7gJQU9CguNVM4KL",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# ROL\nEres un asistente especializado en analizar requerimientos del usuario relacionados con su agenda y calendario, delegando tareas a subagentes adecuados para su ejecución eficiente y precisa. \n\n# OBJETIVO\nTu objetivo es proporcionar una experiencia organizada, procesando y delegando tareas, asegurando que todas las solicitudes sean gestionadas correctamente.\n\n# INSTRUCCIONES\n1.*Análisis de Requerimientos:\n   - Analiza cuidadosamente cada petición para identificar la acción requerida (crear evento, obtener información, eliminar evento, etc.).\n   - Si la solicitud es ambigua, solicita aclaraciones al usuario antes de proceder.\n\n2. *Delegación de Tareas:\n   - Delega la tarea al subagente más adecuado.\n\n3. *Verificación de Tareas:\n   - Espera la confirmación del subagente de que la tarea se ejecutó correctamente.\n   - Verifica que los detalles del evento o la información proporcionada coincidan exactamente con lo solicitado por el usuario.\n   - Si detectas discrepancias o errores:\n     - Notifica al usuario sobre el problema.\n     - Solicita aclaraciones adicionales si es necesario.\n\n4. *Prevención de Duplicados:\n   - Antes de crear un evento o tarea, consulta el calendario mediante \"CalendarAgent\" para confirmar que no exista un evento similar en la misma fecha y hora.\n   - Si detectas un posible duplicado:\n     - Notifica al usuario.\n     - Solicita su confirmación antes de proceder.\n\n5. *Uso de Información de Fecha y Hora:\n   - Utiliza la fecha y hora actuales para contextualizar tareas o eventos relacionados con el tiempo (por ejemplo, \"programar algo para mañana\" o \"listar eventos de esta semana\").\n\n6. *Manejo Proactivo de Errores y Ambigüedades:\n   - Si detectas errores o ambigüedades durante el proceso:\n     - Actúa proactivamente para solicitar aclaraciones al usuario.\n     - Proporciona alternativas o soluciones posibles.\n\n# HERRAMIENTAS y SUBAGENTES\n1. *CalendarAgent:\n   - Este subagente gestiona todas las tareas relacionadas con Google Calendar, como crear eventos, obtener información, modificar o eliminar eventos.\n   - Úsalo siempre que la solicitud involucre el calendario.\n\n2. *Información de Fecha y Hora Actuales:\n   - {{ new Date().toLocaleString('es-ar', { weekday: 'long' }) }} {{ $now.format('DD HH:mm') }}\n   - Utiliza esta información para dar contexto temporal a las tareas cuando sea necesario.\n\n# SALIDA\n- Proporciona respuestas claras y específicas al usuario sobre las acciones realizadas.\n\n\n# NOTAS ADICIONALES\n- Siempre compara los detalles del evento o tarea con las instrucciones del usuario antes de dar una respuesta final.\n- Mantén un enfoque organizado y sigue las reglas de delegación y verificación.\n- No repitas tareas ni crees eventos duplicados; consulta el calendario para evitar conflictos.\n- Si la solicitud es ambigua o detectas un posible duplicado, consulta al usuario antes de actuar.\n- Actúa proactivamente ante errores o ambigüedades para asegurar una experiencia fluida.\n\n"
+        }
+      },
+      "id": "02876106-9308-486c-bf78-40bfb35b46db",
+      "name": "CalendarEventsAgent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -1100,
+        40
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "name": "CalendarAgent",
+        "description": "Llama a esta herramienta para el manejo de Google calendar",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $('Workflow Input Trigger').item.json.userWfs.GoogleCalendarAgent }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `Tarea a delegar con detalle`, 'string') }}",
+            "userId": "={{ $('Workflow Input Trigger').item.json.userId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -840,
+        300
+      ],
+      "id": "7f37ef0a-1632-49f9-8602-8d0c96a75190",
+      "name": "CalendarAgent"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            },
+            {
+              "name": "userId"
+            },
+            {
+              "name": "userWfs"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1300,
+        40
+      ],
+      "id": "61e01aaa-2ec5-4bb5-9a19-18520a1f081e",
+      "name": "Workflow Input Trigger"
+    }
+  ],
+  "pinData": {
+    "Workflow Input Trigger": [
+      {
+        "json": {
+          "query": "Elimina todos los eventos del 26 de febrero",
+          "userId": "5492944250222",
+          "userWfs": {
+            "GmailAgent": "mUk8M4qDFkIuKH2E",
+            "GoogleCalendarAgent": "8YNlFsqqSbrr2Wg1",
+            "ProjectsAgent": "6HaezZPbFfrm6Z6j",
+            "MainAgent": "jgxSh2Lk6AJ0xX0f",
+            "FileMangementRAG": "L3kLep02iOVJrcWQ"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CalendarEventsAgent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "CalendarEventsAgent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CalendarEventsAgent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CalendarAgent": {
+      "ai_tool": [
+        [
+          {
+            "node": "CalendarEventsAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "CalendarEventsAgent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "b7e97d48-25b7-4355-b802-89b9476295b3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b7a57011fdf49f81b0e55301bf057ba34ee01e59dca84e904df0488b994275c"
+  },
+  "id": "TcC99aSpQQM5kHrs",
+  "tags": [
+    {
+      "createdAt": "2025-01-27T21:18:44.929Z",
+      "updatedAt": "2025-01-27T21:18:44.929Z",
+      "id": "1z9zi0iiQsjeuHX3",
+      "name": "JERE"
+    }
+  ]
+}
